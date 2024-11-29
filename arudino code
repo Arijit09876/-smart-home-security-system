@@ -1,0 +1,99 @@
+# Smart Home Security System
+
+##components;
+### Hardware
+1. *Microcontroller*: Arduino, ESP32, or any compatible board.
+2. *Ultrasonic Sensor*: For intrusion detection.
+3. *Flame Sensor*: For fire and flame detection.
+4. *Gas Sensor*: MQ-2, MQ-5, or similar for detecting LPG, propane, and methane.
+5. *Buzzer*: To sound alarms.
+6. *LEDs*: Visual indicators for alerts.
+7. *Power Supply*: 5V or 12V DC.
+8. *Wires and Breadboard/PCB*: For circuit connections.
+
+### Software
+1. Arduino IDE or any other programming environment compatible with your microcontroller.
+2. Required libraries for sensors (e.g., NewPing for ultrasonic sensor, MQ gas sensor library).
+3. (Optional) IoT platform integration, such as Blynk or MQTT.
+
+## Installation and Setup
+1. *Hardware Assembly*:
+   - Connect the ultrasonic sensor to the microcontroller (Trigger and Echo pins).
+   - Connect the flame sensor to an analog input pin.
+   - Connect the gas sensor to another analog input pin.
+   - Connect the buzzer and LEDs to digital output pins.
+   - Ensure all components are powered correctly.
+
+2. *Software Configuration*:
+   - Install Arduino IDE and necessary libraries.
+   - Upload the provided code to your microcontroller.
+   - Adjust sensor thresholds in the code as per your environment.
+
+3. *Testing*:
+   - Test each component individually to ensure proper functionality.
+   - Simulate intrusion, fire, and gas leakage scenarios to verify system performance.
+
+## Usage
+- Once powered on, the system will monitor continuously.
+- Upon detecting:
+  - *Intrusion*: The buzzer will sound, and the corresponding LED will light up.
+  - *Fire*: A distinct alarm will trigger, and a fire alert LED will blink.
+  - *Gas Leakage*: A gas alarm will sound, and the gas alert LED will activate.
+
+## Arduino Code
+cpp
+#include <NewPing.h>
+
+#define TRIG_PIN 9
+#define ECHO_PIN 10
+#define MAX_DISTANCE 200 // Maximum distance to measure in cm
+#define FLAME_SENSOR_PIN A0
+#define GAS_SENSOR_PIN A1
+#define BUZZER_PIN 3
+#define LED_INTRUSION 4
+#define LED_FIRE 5
+#define LED_GAS 6
+
+NewPing sonar(TRIG_PIN, ECHO_PIN, MAX_DISTANCE);
+
+void setup() {
+  pinMode(FLAME_SENSOR_PIN, INPUT);
+  pinMode(GAS_SENSOR_PIN, INPUT);
+  pinMode(BUZZER_PIN, OUTPUT);
+  pinMode(LED_INTRUSION, OUTPUT);
+  pinMode(LED_FIRE, OUTPUT);
+  pinMode(LED_GAS, OUTPUT);
+  Serial.begin(9600);
+}
+
+void loop() {
+  // Ultrasonic sensor for intrusion detection
+  int distance = sonar.ping_cm();
+  if (distance > 0 && distance < 50) { // Intruder detected within 50 cm
+    digitalWrite(BUZZER_PIN, HIGH);
+    digitalWrite(LED_INTRUSION, HIGH);
+  } else {
+    digitalWrite(BUZZER_PIN, LOW);
+    digitalWrite(LED_INTRUSION, LOW);
+  }
+
+  // Flame sensor for fire detection
+  int flameValue = analogRead(FLAME_SENSOR_PIN);
+  if (flameValue < 100) { // Flame detected (adjust threshold as needed)
+    digitalWrite(BUZZER_PIN, HIGH);
+    digitalWrite(LED_FIRE, HIGH);
+  } else {
+    digitalWrite(LED_FIRE, LOW);
+  }
+
+  // Gas sensor for gas leakage detection
+  int gasValue = analogRead(GAS_SENSOR_PIN);
+  if (gasValue > 400) { // Gas detected (adjust threshold as needed)
+    digitalWrite(BUZZER_PIN, HIGH);
+    digitalWrite(LED_GAS, HIGH);
+  } else {
+    digitalWrite(LED_GAS, LOW);
+  }
+
+  delay(100);
+}
